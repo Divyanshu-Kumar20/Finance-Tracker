@@ -1,10 +1,11 @@
 {
+  "homepage": "https://divyanshu-kumar20.github.io/Finance-Tracker",
   "name": "finance-tracker",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+   "dev": "vite",
   "build": "vite build",
   "preview": "vite preview",
   "predeploy": "npm run build",
@@ -23,6 +24,7 @@
     "eslint": "^10.3.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "gh-pages": "^6.3.0",
     "globals": "^17.6.0",
     "vite": "^8.0.12"
   }
