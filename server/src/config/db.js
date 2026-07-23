@@ -1,4 +1,12 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Set reliable public DNS servers to resolve MongoDB Atlas SRV records (queryTxt ETIMEOUT fix)
+try {
+  dns.setServers(["8.8.8.8", "1.1.1.1"]);
+} catch (e) {
+  // Fallback if setServers is restricted
+}
 
 const connectDB = async () => {
   try {
@@ -16,8 +24,8 @@ const connectDB = async () => {
 
     const connection = await mongoose.connect(process.env.MONGO_URI, {
       family: 4,                      // Force IPv4
-      serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
       socketTimeoutMS: 45000,
     });
 
