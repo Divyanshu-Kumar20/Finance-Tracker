@@ -1,5 +1,7 @@
 import { useState } from "react"
+import { AuthProvider, useAuth } from "./context/AuthContext"
 import { FinanceProvider } from "./context/FinanceContext"
+import AuthScreen from "./components/AuthScreen"
 import TopBar from "./components/TopBar"
 import SummaryCards from "./components/SummaryCards"
 import CategoryChart from "./components/CategoryChart"
@@ -25,11 +27,33 @@ function AppContent() {
   )
 }
 
-function App() {
+function MainLayout() {
+  const { isAuthenticated, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8f9fa", color: "#666", fontSize: "14px" }}>
+        Loading...
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <AuthScreen />
+  }
+
   return (
     <FinanceProvider>
       <AppContent />
     </FinanceProvider>
+  )
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <MainLayout />
+    </AuthProvider>
   )
 }
 

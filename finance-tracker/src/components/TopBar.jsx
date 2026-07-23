@@ -1,7 +1,9 @@
 import { useFinance } from "../context/FinanceContext"
+import { useAuth } from "../context/AuthContext"
 
 function TopBar({ onAddClick }) {
   const { selectedMonth, setMonth } = useFinance()
+  const { user, logout } = useAuth()
 
   const handlePrevMonth = () => {
     const [year, month] = selectedMonth.split("-").map(Number)
@@ -26,10 +28,20 @@ function TopBar({ onAddClick }) {
       justifyContent: "space-between",
       alignItems: "center",
       marginBottom: "1.5rem",
+      flexWrap: "wrap",
+      gap: "12px",
     }}>
-      <h1 style={{ fontSize: "20px", fontWeight: "600", color: "#1a1a1a" }}>
-        💰 Finance Tracker
-      </h1>
+      <div>
+        <h1 style={{ fontSize: "20px", fontWeight: "600", color: "#1a1a1a", margin: 0 }}>
+          💰 Finance Tracker
+        </h1>
+        {user && (
+          <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>
+            Welcome, <strong>{user.name}</strong>
+          </div>
+        )}
+      </div>
+
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <button onClick={handlePrevMonth} style={navBtnStyle}>‹</button>
         <span style={{ fontSize: "14px", fontWeight: "500", minWidth: "120px", textAlign: "center" }}>
@@ -37,6 +49,7 @@ function TopBar({ onAddClick }) {
         </span>
         <button onClick={handleNextMonth} style={navBtnStyle}>›</button>
         <button onClick={onAddClick} style={addBtnStyle}>+ Add</button>
+        <button onClick={logout} style={logoutBtnStyle}>Logout</button>
       </div>
     </div>
   )
@@ -58,6 +71,17 @@ const addBtnStyle = {
   borderRadius: "8px",
   padding: "8px 16px",
   fontSize: "14px",
+  fontWeight: "500",
+  cursor: "pointer",
+}
+
+const logoutBtnStyle = {
+  background: "#f0f0f0",
+  color: "#666",
+  border: "1px solid #e0e0e0",
+  borderRadius: "8px",
+  padding: "8px 14px",
+  fontSize: "13px",
   fontWeight: "500",
   cursor: "pointer",
 }

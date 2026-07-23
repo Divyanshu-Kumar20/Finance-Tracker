@@ -2,7 +2,7 @@ import { useFinance } from "../context/FinanceContext"
 import { formatCurrency, formatDate, getCategoryIcon } from "../utils/helpers"
 
 function TransactionList() {
-  const { transactions, filter, setFilter, deleteTransaction } = useFinance()
+  const { transactions, filter, setFilter, deleteTransaction, loading, error } = useFinance()
 
   const filtered = transactions.filter((t) => {
     if (filter === "all") return true
@@ -36,44 +36,57 @@ function TransactionList() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {error && (
+        <div style={{ background: "#FCE8E6", color: "#D85A30", padding: "10px", borderRadius: "8px", fontSize: "12px", marginBottom: "1rem" }}>
+          {error}
+        </div>
+      )}
+
+      {loading && filtered.length === 0 ? (
+        <div style={{ fontSize: "13px", color: "#888", textAlign: "center", padding: "1.5rem 0" }}>
+          Loading transactions...
+        </div>
+      ) : filtered.length === 0 ? (
         <div style={{ fontSize: "13px", color: "#aaa", textAlign: "center", padding: "1.5rem 0" }}>
           No transactions found
         </div>
       ) : (
-        filtered.map((t) => (
-          <div key={t.id} style={rowStyle}>
-            <div style={iconStyle}>{getCategoryIcon(t.category)}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: "13px", fontWeight: "500", color: "#1a1a1a" }}>{t.name}</div>
-              <div style={{ fontSize: "11px", color: "#aaa", marginTop: "2px" }}>
-                {t.category} · {formatDate(t.date)}
+        filtered.map((t) => {
+          const id = t._id || t.id
+          return (
+            <div key={id} style={rowStyle}>
+              <div style={iconStyle}>{getCategoryIcon(t.category)}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: "13px", fontWeight: "500", color: "#1a1a1a" }}>{t.name}</div>
+                <div style={{ fontSize: "11px", color: "#aaa", marginTop: "2px" }}>
+                  {t.category} · {formatDate(t.date)}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  color: t.type === "income" ? "#1D9E75" : "#D85A30",
+                }}>
+                  {t.type === "income" ? "+" : "-"}{formatCurrency(t.amount)}
+                </div>
+                <button
+                  onClick={() => deleteTransaction(id)}
+                  style={{
+                    fontSize: "10px",
+                    color: "#ccc",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    marginTop: "2px",
+                  }}
+                >
+                  delete
+                </button>
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{
-                fontSize: "13px",
-                fontWeight: "600",
-                color: t.type === "income" ? "#1D9E75" : "#D85A30",
-              }}>
-                {t.type === "income" ? "+" : "-"}{formatCurrency(t.amount)}
-              </div>
-              <button
-                onClick={() => deleteTransaction(t.id)}
-                style={{
-                  fontSize: "10px",
-                  color: "#ccc",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  marginTop: "2px",
-                }}
-              >
-                delete
-              </button>
-            </div>
-          </div>
-        ))
+          )
+        })
       )}
     </div>
   )

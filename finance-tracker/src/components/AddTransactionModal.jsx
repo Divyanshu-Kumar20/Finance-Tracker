@@ -8,6 +8,8 @@ const CATEGORIES = {
 
 function AddTransactionModal({ onClose }) {
   const { addTransaction, selectedMonth } = useFinance()
+  const [submitting, setSubmitting] = useState(false)
+  const [modalError, setModalError] = useState(null)
   const [form, setForm] = useState({
     name: "",
     amount: "",
@@ -25,10 +27,29 @@ function AddTransactionModal({ onClose }) {
     }))
   }
 
-  const handleSubmit = () => {
-    if (!form.name || !form.amount || isNaN(form.amount)) return
-    addTransaction({ ...form, amount: Number(form.amount) })
-    onClose()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setModalError(null)
+
+    if (!form.name.trim()) {
+      setModalError("Name is required")
+      return
+    }
+
+    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) {
+      setModalError("Amount must be a number greater than 0")
+      return
+    }
+
+    setSubmitting(true)
+    const result = await addTransaction({ ...form, amount: Number(form.amount) })
+    setSubmitting(false)
+
+    if (result && result.success) {
+      onClose()
+    } else if (result && result.error) {
+      setModalError(result.error)
+    }
   }
 
   return (
@@ -39,79 +60,88 @@ function AddTransactionModal({ onClose }) {
           <button onClick={onClose} style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#888" }}>×</button>
         </div>
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Type</label>
-          <div style={{ display: "flex", gap: "8px" }}>
-            {["income", "expense"].map((t) => (
-              <button
-                key={t}
-                onClick={() => setForm((p) => ({ ...p, type: t, category: CATEGORIES[t][0] }))}
-                style={{
-                  flex: 1,
-                  padding: "8px",
-                  borderRadius: "8px",
-                  border: "1px solid",
-                  borderColor: form.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#e0e0e0",
-                  background: form.type === t ? (t === "income" ? "#E1F5EE" : "#FAECE7") : "white",
-                  color: form.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#888",
-                  fontWeight: "500",
-                  fontSize: "13px",
-                  textTransform: "capitalize",
-                  cursor: "pointer",
-                }}
-              >
-                {t}
-              </button>
-            ))}
+        {modalError && (
+          <div style={{ background: "#FCE8E6", color: "#D85A30", padding: "10px", borderRadius: "8px", fontSize: "12px", marginBottom: "1rem" }}>
+            {modalError}
           </div>
-        </div>
+        )}
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Name</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            placeholder="e.g. Salary, Zomato order"
-            style={inputStyle}
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Type</label>
+            <div style={{ display: "flex", gap: "8px" }}>
+              {["income", "expense"].map((t) => (
+                <button
+                  type="button"
+                  key={t}
+                  onClick={() => setForm((p) => ({ ...p, type: t, category: CATEGORIES[t][0] }))}
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "8px",
+                    border: "1px solid",
+                    borderColor: form.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#e0e0e0",
+                    background: form.type === t ? (t === "income" ? "#E1F5EE" : "#FAECE7") : "white",
+                    color: form.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#888",
+                    fontWeight: "500",
+                    fontSize: "13px",
+                    textTransform: "capitalize",
+                    cursor: "pointer",
+                  }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Amount (₹)</label>
-          <input
-            name="amount"
-            value={form.amount}
-            onChange={handleChange}
-            placeholder="e.g. 5000"
-            type="number"
-            style={inputStyle}
-          />
-        </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Name</label>
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g. Salary, Zomato order"
+              style={inputStyle}
+            />
+          </div>
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Category</label>
-          <select name="category" value={form.category} onChange={handleChange} style={inputStyle}>
-            {CATEGORIES[form.type].map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Amount (₹)</label>
+            <input
+              name="amount"
+              value={form.amount}
+              onChange={handleChange}
+              placeholder="e.g. 5000"
+              type="number"
+              style={inputStyle}
+            />
+          </div>
 
-        <div style={fieldStyle}>
-          <label style={labelStyle}>Date</label>
-          <input
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            type="date"
-            style={inputStyle}
-          />
-        </div>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Category</label>
+            <select name="category" value={form.category} onChange={handleChange} style={inputStyle}>
+              {CATEGORIES[form.type].map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
 
-        <button onClick={handleSubmit} style={submitStyle}>
-          Add transaction
-        </button>
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Date</label>
+            <input
+              name="date"
+              value={form.date}
+              onChange={handleChange}
+              type="date"
+              style={inputStyle}
+            />
+          </div>
+
+          <button type="submit" disabled={submitting} style={submitStyle}>
+            {submitting ? "Adding..." : "Add transaction"}
+          </button>
+        </form>
       </div>
     </div>
   )
@@ -152,6 +182,7 @@ const inputStyle = {
   border: "1px solid #e0e0e0",
   fontSize: "14px",
   outline: "none",
+  boxSizing: "border-box",
 }
 
 const submitStyle = {
