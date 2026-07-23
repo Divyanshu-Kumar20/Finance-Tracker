@@ -44,7 +44,12 @@ export function AuthProvider({ children }) {
       setUser(userData)
       return { success: true }
     } catch (err) {
-      const message = err.response?.data?.message || "Login failed. Please check your credentials."
+      let message = "Login failed."
+      if (!err.response) {
+        message = "Cannot connect to backend server. Please make sure the backend server is running."
+      } else if (err.response?.data?.message) {
+        message = err.response.data.message
+      }
       setError(message)
       return { success: false, error: message }
     }
@@ -60,7 +65,9 @@ export function AuthProvider({ children }) {
       return { success: true }
     } catch (err) {
       let message = "Registration failed."
-      if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
+      if (!err.response) {
+        message = "Cannot connect to backend server. Please make sure the backend server is running."
+      } else if (err.response?.data?.errors && Array.isArray(err.response.data.errors)) {
         message = err.response.data.errors.map((e) => e.message).join(". ")
       } else if (err.response?.data?.message) {
         message = err.response.data.message
