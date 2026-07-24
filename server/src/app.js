@@ -17,7 +17,15 @@ app.use(helmet());
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || origin === FRONTEND_URL || process.env.NODE_ENV === "test") {
+      if (
+        !origin ||
+        !FRONTEND_URL ||
+        FRONTEND_URL === "*" ||
+        origin === FRONTEND_URL ||
+        (typeof FRONTEND_URL === "string" &&
+          FRONTEND_URL.split(",").map((s) => s.trim()).includes(origin)) ||
+        process.env.NODE_ENV === "test"
+      ) {
         return callback(null, true);
       }
 
