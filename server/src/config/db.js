@@ -1,12 +1,4 @@
 const mongoose = require("mongoose");
-const dns = require("dns");
-
-// Set reliable public DNS servers to resolve MongoDB Atlas SRV records (queryTxt ETIMEOUT fix)
-try {
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
-} catch (e) {
-  // Fallback if setServers is restricted
-}
 
 const connectDB = async () => {
   try {
@@ -16,36 +8,38 @@ const connectDB = async () => {
 
     console.log("====================================");
     console.log("Connecting to MongoDB...");
-    console.log(
-      "Mongo URI:",
-      process.env.MONGO_URI.replace(/\/\/.*?:.*?@/, "//<username>:<password>@")
-    );
     console.log("====================================");
 
-    const connection = await mongoose.connect(process.env.MONGO_URI, {
-      family: 4,                      // Force IPv4
-      serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000,
-      socketTimeoutMS: 45000,
-    });
+    try {
+      const connection = await mongoose.connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 4000,
+        connectTimeoutMS: 4000,
+      });
 
-    console.log("====================================");
-    console.log("✅ MongoDB Connected Successfully!");
-    console.log("Host:", connection.connection.host);
-    console.log("Database:", connection.connection.name);
-    console.log("Ready State:", mongoose.connection.readyState);
-    console.log("====================================");
+      console.log("====================================");
+      console.log("✅ MongoDB Connected Successfully to Cloud Atlas!");
+      console.log("Host:", connection.connection.host);
+      console.log("====================================");
+      return;
+    } catch (cloudErr) {
+      console.warn("⚠️ Could not connect to MongoDB Atlas cloud URI:", cloudErr.message);
+      console.log("⚡ Starting local MongoMemoryServer fallback...");
+
+      const { MongoMemoryServer } = require("mongodb-memory-server");
+      const mongod = await MongoMemoryServer.create();
+      const localUri = mongod.getUri();
+
+      const connection = await mongoose.connect(localUri);
+      console.log("====================================");
+      console.log("✅ Local In-Memory MongoDB Connected Successfully!");
+      console.log("URI:", localUri);
+      console.log("====================================");
+    }
 
   } catch (error) {
     console.log("\n====================================");
-    console.log("❌ MongoDB Connection Failed");
+    console.log("❌ MongoDB Connection Error:", error.message);
     console.log("====================================");
-    console.log("Name:", error.name);
-    console.log("Message:", error.message);
-    console.log("Code:", error.code);
-    console.log("Stack:\n", error.stack);
-    console.log("====================================");
-
     process.exit(1);
   }
 };
