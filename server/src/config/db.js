@@ -11,7 +11,7 @@ const connectDB = async () => {
 
   try {
     const db = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 4000,
     });
     isConnected = db.connections[0].readyState === 1;
     console.log("====================================");
@@ -19,15 +19,16 @@ const connectDB = async () => {
     console.log("====================================");
   } catch (err) {
     console.warn("⚠️ Cloud MongoDB Connection Warning:", err.message);
-    if (process.env.NODE_ENV !== "production") {
-      try {
-        const { MongoMemoryServer } = require("mongodb-memory-server");
-        const mongod = await MongoMemoryServer.create();
-        await mongoose.connect(mongod.getUri());
-        console.log("✅ Local In-Memory MongoDB Connected!");
-      } catch (memErr) {
-        console.error("Memory server fallback error:", memErr.message);
-      }
+    try {
+      const { MongoMemoryServer } = require("mongodb-memory-server");
+      const mongod = await MongoMemoryServer.create();
+      const db = await mongoose.connect(mongod.getUri());
+      isConnected = db.connections[0].readyState === 1;
+      console.log("====================================");
+      console.log("✅ In-Memory MongoDB Fallback Connected!");
+      console.log("====================================");
+    } catch (memErr) {
+      console.error("Memory server fallback error:", memErr.message);
     }
   }
 };
