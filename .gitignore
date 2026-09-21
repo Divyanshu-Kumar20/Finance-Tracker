@@ -12,4 +12,7 @@ __pycache__/
 *.pyc
 venv/
 .venv/
-ai-service/model/model.onnx.data
+ai-service/model/*.onnx
+ai-service/model/*.data
+.qai_hub/
+client.ini
