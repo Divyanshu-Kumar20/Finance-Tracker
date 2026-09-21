@@ -5,6 +5,7 @@ const {
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  categorizeTransaction,
 } = require("../controllers/transactionController");
 const asyncHandler = require("../middleware/asyncHandler");
 const auth = require("../middleware/auth");
@@ -15,6 +16,7 @@ const router = express.Router();
 
 router.use(auth);
 
+router.post("/categorize", asyncHandler(categorizeTransaction));
 router.get("/summary", asyncHandler(getTransactionSummary));
 router.get("/", asyncHandler(listTransactions));
 router.post("/", transactionValidator, validate, asyncHandler(createTransaction));

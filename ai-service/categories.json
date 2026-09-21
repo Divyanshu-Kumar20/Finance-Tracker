@@ -1,0 +1,37 @@
+{
+  "Food": [
+    "zomato dinner food",
+    "swiggy order lunch",
+    "restaurant dining cafe",
+    "pizza burger starbucks",
+    "eating out meal snack"
+  ],
+  "Travel": [
+    "uber cab taxi ride",
+    "monthly metro pass",
+    "petrol fuel gas station",
+    "train flight ticket fare",
+    "auto bus transport travel"
+  ],
+  "Shopping": [
+    "amazon online shopping",
+    "flipkart clothes shoes",
+    "myntra fashion apparel",
+    "electronics store buy mall",
+    "retail purchase item"
+  ],
+  "Bills": [
+    "electricity bill payment",
+    "monthly house rent",
+    "water utility charge",
+    "wifi broadband internet",
+    "mobile phone recharge"
+  ],
+  "Groceries": [
+    "blinkit zepto grocery",
+    "supermarket vegetables fruits",
+    "milk bread eggs daily",
+    "instamart bigbasket market",
+    "household groceries supply"
+  ]
+}

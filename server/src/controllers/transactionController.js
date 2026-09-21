@@ -1,8 +1,9 @@
 const Transaction = require("../models/Transaction");
 const mongoose = require("mongoose");
+const { categorizeText } = require("../services/aiService");
 
 const buildTransactionPayload = (body) => {
-  const { name, amount, type, category, date } = body;
+  const { name, amount, type, category, date, aiCategorized, aiConfidence } = body;
 
   return {
     name,
@@ -10,6 +11,8 @@ const buildTransactionPayload = (body) => {
     type,
     category,
     date,
+    ...(typeof aiCategorized === "boolean" ? { aiCategorized } : {}),
+    ...(typeof aiConfidence === "number" ? { aiConfidence } : {}),
   };
 };
 
@@ -194,10 +197,21 @@ const deleteTransaction = async (req, res) => {
   }
 };
 
+const categorizeTransaction = async (req, res) => {
+  try {
+    const text = req.body.text || req.body.name;
+    const result = await categorizeText(text);
+    res.json(result);
+  } catch (error) {
+    res.json({ category: "Other", aiConfidence: 0, aiCategorized: false });
+  }
+};
+
 module.exports = {
   listTransactions,
   getTransactionSummary,
   createTransaction,
   updateTransaction,
   deleteTransaction,
+  categorizeTransaction,
 };

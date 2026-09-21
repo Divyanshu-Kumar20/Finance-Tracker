@@ -7,3 +7,9 @@ node_modules/
 !.env.example
 !**/.env.example
 
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+ai-service/model/model.onnx.data

@@ -1,4 +1,17 @@
 {
+  "name": "finance-tracker-project",
+  "version": "1.0.0",
+  "description": "Fullstack Finance Tracker with On-Device AI Categorization",
+  "main": "index.js",
+  "scripts": {
+    "start:ai": "cd ai-service && uvicorn main:app --reload --port 8000",
+    "start:server": "cd server && npm run dev",
+    "start:client": "cd finance-tracker && npm run dev",
+    "start": "npx concurrently -k -n \"AI-SERVICE,EXPRESS,REACT\" -c \"magenta,cyan,green\" \"npm run start:ai\" \"npm run start:server\" \"npm run start:client\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
   "dependencies": {
     "mongodb": "^7.5.0"
   }

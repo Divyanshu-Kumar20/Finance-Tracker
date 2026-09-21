@@ -1,48 +1,109 @@
-import { useState } from "react"
+import { useReducer, useState } from "react"
 import { useFinance } from "../context/FinanceContext"
+import { categorizeExpense } from "../utils/api"
 
 const CATEGORIES = {
   income: ["Employment", "Side Income", "Other"],
   expense: ["Rent", "Food", "Transport", "Shopping", "Entertainment", "Health", "Education", "Other"],
 }
 
+const initialState = (selectedMonth) => ({
+  name: "",
+  amount: "",
+  type: "expense",
+  category: "Food",
+  date: selectedMonth + "-01",
+  aiSuggested: false,
+  aiCategorized: false,
+  aiConfidence: 0,
+  categorizing: false,
+})
+
+function formReducer(state, action) {
+  switch (action.type) {
+    case "SET_FIELD": {
+      const { name, value } = action.payload
+      const isTypeChange = name === "type"
+      const newType = isTypeChange ? value : state.type
+      const newCategory = isTypeChange ? CATEGORIES[value][0] : (name === "category" ? value : state.category)
+
+      return {
+        ...state,
+        [name]: value,
+        type: newType,
+        category: newCategory,
+        ...(name === "category" ? { aiSuggested: false } : {}),
+      }
+    }
+    case "START_CATEGORIZING":
+      return { ...state, categorizing: true }
+    case "CATEGORIZE_SUCCESS": {
+      const { category, aiConfidence, aiCategorized } = action.payload
+      const validCategories = CATEGORIES[state.type]
+      const finalCategory = validCategories.includes(category) ? category : "Other"
+
+      return {
+        ...state,
+        categorizing: false,
+        category: finalCategory,
+        aiSuggested: Boolean(aiCategorized && finalCategory !== "Other"),
+        aiCategorized: Boolean(aiCategorized),
+        aiConfidence: typeof aiConfidence === "number" ? aiConfidence : 0,
+      }
+    }
+    case "CATEGORIZE_ERROR":
+      return { ...state, categorizing: false }
+    default:
+      return state
+  }
+}
+
 function AddTransactionModal({ onClose }) {
   const { addTransaction, selectedMonth } = useFinance()
   const [submitting, setSubmitting] = useState(false)
   const [modalError, setModalError] = useState(null)
-  const [form, setForm] = useState({
-    name: "",
-    amount: "",
-    type: "expense",
-    category: "Food",
-    date: selectedMonth + "-01",
-  })
+  const [state, dispatch] = useReducer(formReducer, selectedMonth, initialState)
 
   const handleChange = (e) => {
     const { name, value } = e.target
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
-      ...(name === "type" ? { category: CATEGORIES[value][0] } : {}),
-    }))
+    dispatch({ type: "SET_FIELD", payload: { name, value } })
+  }
+
+  const handleNameBlur = async () => {
+    if (!state.name.trim() || state.type !== "expense") return
+
+    dispatch({ type: "START_CATEGORIZING" })
+    try {
+      const res = await categorizeExpense(state.name)
+      dispatch({ type: "CATEGORIZE_SUCCESS", payload: res })
+    } catch (err) {
+      dispatch({ type: "CATEGORIZE_ERROR" })
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setModalError(null)
 
-    if (!form.name.trim()) {
+    if (!state.name.trim()) {
       setModalError("Name is required")
       return
     }
 
-    if (!form.amount || isNaN(form.amount) || Number(form.amount) <= 0) {
+    if (!state.amount || isNaN(state.amount) || Number(state.amount) <= 0) {
       setModalError("Amount must be a number greater than 0")
       return
     }
 
     setSubmitting(true)
-    const result = await addTransaction({ ...form, amount: Number(form.amount) })
+    const result = await addTransaction({
+      name: state.name,
+      amount: Number(state.amount),
+      type: state.type,
+      category: state.category,
+      date: state.date,
+      ...(state.aiCategorized ? { aiCategorized: state.aiCategorized, aiConfidence: state.aiConfidence } : {}),
+    })
     setSubmitting(false)
 
     if (result && result.success) {
@@ -74,15 +135,15 @@ function AddTransactionModal({ onClose }) {
                 <button
                   type="button"
                   key={t}
-                  onClick={() => setForm((p) => ({ ...p, type: t, category: CATEGORIES[t][0] }))}
+                  onClick={() => dispatch({ type: "SET_FIELD", payload: { name: "type", value: t } })}
                   style={{
                     flex: 1,
                     padding: "8px",
                     borderRadius: "8px",
                     border: "1px solid",
-                    borderColor: form.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#e0e0e0",
-                    background: form.type === t ? (t === "income" ? "#E1F5EE" : "#FAECE7") : "white",
-                    color: form.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#888",
+                    borderColor: state.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#e0e0e0",
+                    background: state.type === t ? (t === "income" ? "#E1F5EE" : "#FAECE7") : "white",
+                    color: state.type === t ? (t === "income" ? "#1D9E75" : "#D85A30") : "#888",
                     fontWeight: "500",
                     fontSize: "13px",
                     textTransform: "capitalize",
@@ -99,8 +160,9 @@ function AddTransactionModal({ onClose }) {
             <label style={labelStyle}>Name</label>
             <input
               name="name"
-              value={form.name}
+              value={state.name}
               onChange={handleChange}
+              onBlur={handleNameBlur}
               placeholder="e.g. Salary, Zomato order"
               style={inputStyle}
             />
@@ -110,7 +172,7 @@ function AddTransactionModal({ onClose }) {
             <label style={labelStyle}>Amount (₹)</label>
             <input
               name="amount"
-              value={form.amount}
+              value={state.amount}
               onChange={handleChange}
               placeholder="e.g. 5000"
               type="number"
@@ -119,19 +181,31 @@ function AddTransactionModal({ onClose }) {
           </div>
 
           <div style={fieldStyle}>
-            <label style={labelStyle}>Category</label>
-            <select name="category" value={form.category} onChange={handleChange} style={inputStyle}>
-              {CATEGORIES[form.type].map((c) => (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Category</label>
+              {state.categorizing && (
+                <span style={{ fontSize: "11px", color: "#1D9E75", fontStyle: "italic" }}>
+                  Categorizing...
+                </span>
+              )}
+            </div>
+            <select name="category" value={state.category} onChange={handleChange} style={inputStyle}>
+              {CATEGORIES[state.type].map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+            {state.aiSuggested && !state.categorizing && (
+              <div style={badgeStyle}>
+                ✨ Suggested by on-device AI
+              </div>
+            )}
           </div>
 
           <div style={fieldStyle}>
             <label style={labelStyle}>Date</label>
             <input
               name="date"
-              value={form.date}
+              value={state.date}
               onChange={handleChange}
               type="date"
               style={inputStyle}
@@ -183,6 +257,18 @@ const inputStyle = {
   fontSize: "14px",
   outline: "none",
   boxSizing: "border-box",
+}
+
+const badgeStyle = {
+  marginTop: "6px",
+  display: "inline-block",
+  fontSize: "11px",
+  fontWeight: "500",
+  color: "#1D9E75",
+  background: "#E1F5EE",
+  padding: "3px 8px",
+  borderRadius: "12px",
+  border: "1px solid #B8E6D5",
 }
 
 const submitStyle = {

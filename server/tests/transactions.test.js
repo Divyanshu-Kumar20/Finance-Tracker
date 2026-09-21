@@ -262,4 +262,66 @@ describe("Transactions Routes (/api/transactions)", () => {
       expect(res.body.message).toBe("Transaction deleted");
     });
   });
+
+  describe("POST /api/transactions/categorize", () => {
+    const originalFetch = global.fetch;
+
+    afterEach(() => {
+      global.fetch = originalFetch;
+    });
+
+    it("should return 401 without a login", async () => {
+      const res = await request(app)
+        .post("/api/transactions/categorize")
+        .send({ text: "zomato dinner 500" });
+
+      expect(res.status).toBe(401);
+    });
+
+    it("should return a category when the AI service works", async () => {
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ category: "Food", confidence: 0.85 }),
+      });
+
+      const res = await request(app)
+        .post("/api/transactions/categorize")
+        .set("Authorization", `Bearer ${user1Token}`)
+        .send({ text: "zomato dinner 500" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.category).toBe("Food");
+      expect(res.body.aiConfidence).toBe(0.85);
+      expect(res.body.aiCategorized).toBe(true);
+    });
+
+    it("should return Other when the AI service is down", async () => {
+      global.fetch = jest.fn().mockRejectedValue(new Error("ECONNREFUSED"));
+
+      const res = await request(app)
+        .post("/api/transactions/categorize")
+        .set("Authorization", `Bearer ${user1Token}`)
+        .send({ text: "zomato dinner 500" });
+
+      expect(res.status).toBe(200);
+      expect(res.body.category).toBe("Other");
+      expect(res.body.aiConfidence).toBe(0);
+      expect(res.body.aiCategorized).toBe(false);
+    });
+
+    it("should allow creating transaction with optional aiCategorized and aiConfidence fields", async () => {
+      const res = await request(app)
+        .post("/api/transactions")
+        .set("Authorization", `Bearer ${user1Token}`)
+        .send({
+          ...validTransaction,
+          aiCategorized: true,
+          aiConfidence: 0.95,
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.transaction.aiCategorized).toBe(true);
+      expect(res.body.transaction.aiConfidence).toBe(0.95);
+    });
+  });
 });

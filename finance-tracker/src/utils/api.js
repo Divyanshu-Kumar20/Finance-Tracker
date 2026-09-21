@@ -28,4 +28,17 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 )
 
+export const categorizeExpense = async (text) => {
+  if (!text || !text.trim()) {
+    return { category: "Other", aiConfidence: 0, aiCategorized: false }
+  }
+  try {
+    const response = await api.post("/api/transactions/categorize", { text })
+    return response.data
+  } catch (error) {
+    return { category: "Other", aiConfidence: 0, aiCategorized: false }
+  }
+}
+
 export default api
+

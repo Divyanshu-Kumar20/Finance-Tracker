@@ -43,6 +43,14 @@ const transactionSchema = new mongoose.Schema({
     required: true,
     match: /^\d{4}-\d{2}-\d{2}$/,
   },
+  aiCategorized: {
+    type: Boolean,
+    required: false,
+  },
+  aiConfidence: {
+    type: Number,
+    required: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
