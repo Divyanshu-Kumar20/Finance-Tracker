@@ -1,46 +1,34 @@
 const mongoose = require("mongoose");
 
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected && mongoose.connection.readyState === 1) {
+    return;
+  }
+
+  const mongoUri = process.env.MONGO_URI || "mongodb+srv://divyanshupraja2004_db_userss:Finance12345@finance-tracker-cluster.40sxzzt.mongodb.net/finance-tracker?retryWrites=true&w=majority";
+
   try {
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI is not defined in .env");
+    const db = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 5000,
+    });
+    isConnected = db.connections[0].readyState === 1;
+    console.log("====================================");
+    console.log("✅ MongoDB Connected Successfully!");
+    console.log("====================================");
+  } catch (err) {
+    console.warn("⚠️ Cloud MongoDB Connection Warning:", err.message);
+    if (process.env.NODE_ENV !== "production") {
+      try {
+        const { MongoMemoryServer } = require("mongodb-memory-server");
+        const mongod = await MongoMemoryServer.create();
+        await mongoose.connect(mongod.getUri());
+        console.log("✅ Local In-Memory MongoDB Connected!");
+      } catch (memErr) {
+        console.error("Memory server fallback error:", memErr.message);
+      }
     }
-
-    console.log("====================================");
-    console.log("Connecting to MongoDB...");
-    console.log("====================================");
-
-    try {
-      const connection = await mongoose.connect(process.env.MONGO_URI, {
-        serverSelectionTimeoutMS: 4000,
-        connectTimeoutMS: 4000,
-      });
-
-      console.log("====================================");
-      console.log("✅ MongoDB Connected Successfully to Cloud Atlas!");
-      console.log("Host:", connection.connection.host);
-      console.log("====================================");
-      return;
-    } catch (cloudErr) {
-      console.warn("⚠️ Could not connect to MongoDB Atlas cloud URI:", cloudErr.message);
-      console.log("⚡ Starting local MongoMemoryServer fallback...");
-
-      const { MongoMemoryServer } = require("mongodb-memory-server");
-      const mongod = await MongoMemoryServer.create();
-      const localUri = mongod.getUri();
-
-      const connection = await mongoose.connect(localUri);
-      console.log("====================================");
-      console.log("✅ Local In-Memory MongoDB Connected Successfully!");
-      console.log("URI:", localUri);
-      console.log("====================================");
-    }
-
-  } catch (error) {
-    console.log("\n====================================");
-    console.log("❌ MongoDB Connection Error:", error.message);
-    console.log("====================================");
-    process.exit(1);
   }
 };
 
