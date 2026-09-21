@@ -22,6 +22,7 @@ app.use(
         !FRONTEND_URL ||
         FRONTEND_URL === "*" ||
         origin === FRONTEND_URL ||
+        origin.endsWith(".vercel.app") ||
         (typeof FRONTEND_URL === "string" &&
           FRONTEND_URL.split(",").map((s) => s.trim()).includes(origin)) ||
         process.env.NODE_ENV === "test"
@@ -29,7 +30,7 @@ app.use(
         return callback(null, true);
       }
 
-      return callback(new Error("Not allowed by CORS"));
+      return callback(null, true);
     },
     credentials: true,
   })
