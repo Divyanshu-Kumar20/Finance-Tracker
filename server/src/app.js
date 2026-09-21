@@ -23,6 +23,7 @@ app.use(
         FRONTEND_URL === "*" ||
         origin === FRONTEND_URL ||
         origin.endsWith(".vercel.app") ||
+        origin.endsWith(".onrender.com") ||
         (typeof FRONTEND_URL === "string" &&
           FRONTEND_URL.split(",").map((s) => s.trim()).includes(origin)) ||
         process.env.NODE_ENV === "test"
