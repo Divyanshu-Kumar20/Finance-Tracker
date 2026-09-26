@@ -10,7 +10,7 @@ Hexagon NPU via Qualcomm AI Hub.
 runs only on-device — see "Why the AI doesn't run on the live site"
 below. Clone and run locally to see the full AI feature.)*
 
-**Demo Video:** [add your YouTube link here once recorded]
+**Demo Video Link:** [https://drive.usercontent.google.com/download?id=1hKaUdX0ZVpuZfezJusd7ehJd52UOKDI5&export=download&authuser=0]
 
 ---
 
@@ -185,5 +185,3 @@ categorization, including working completely offline.
 React (Vite) · Node.js/Express · MongoDB · FastAPI · ONNX Runtime ·
 all-MiniLM-L6-v2 · Qualcomm AI Hub
 
-
-**Demo Video Link:** [https://drive.usercontent.google.com/download?id=1hKaUdX0ZVpuZfezJusd7ehJd52UOKDI5&export=download&authuser=0]
