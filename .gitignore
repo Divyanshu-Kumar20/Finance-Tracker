@@ -18,3 +18,9 @@ ai-service/model/*.data
 client.ini
 
 ai-service/model/*.dlc
+
+*.mp4
+
+*.mp4
+
+docs/demo vedio/

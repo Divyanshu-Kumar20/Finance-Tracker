@@ -184,3 +184,6 @@ categorization, including working completely offline.
 
 React (Vite) · Node.js/Express · MongoDB · FastAPI · ONNX Runtime ·
 all-MiniLM-L6-v2 · Qualcomm AI Hub
+
+
+**Demo Video Link:** [https://drive.usercontent.google.com/download?id=1hKaUdX0ZVpuZfezJusd7ehJd52UOKDI5&export=download&authuser=0]
