@@ -1,12 +1,24 @@
 {
+  "Rent": [
+    "monthly house rent",
+    "rent payment landlord",
+    "apartment rent flat",
+    "housing rent due",
+    "pg hostel rent"
+  ],
   "Food": [
     "zomato dinner food",
     "swiggy order lunch",
     "restaurant dining cafe",
     "pizza burger starbucks",
-    "eating out meal snack"
+    "eating out meal snack",
+    "blinkit zepto grocery",
+    "supermarket vegetables fruits",
+    "milk bread eggs daily",
+    "instamart bigbasket market",
+    "household groceries supply"
   ],
-  "Travel": [
+  "Transport": [
     "uber cab taxi ride",
     "monthly metro pass",
     "petrol fuel gas station",
@@ -20,18 +32,25 @@
     "electronics store buy mall",
     "retail purchase item"
   ],
-  "Bills": [
-    "electricity bill payment",
-    "monthly house rent",
-    "water utility charge",
-    "wifi broadband internet",
-    "mobile phone recharge"
+  "Entertainment": [
+    "netflix subscription movie",
+    "spotify music streaming",
+    "cinema movie ticket",
+    "concert event outing",
+    "gaming games subscription"
   ],
-  "Groceries": [
-    "blinkit zepto grocery",
-    "supermarket vegetables fruits",
-    "milk bread eggs daily",
-    "instamart bigbasket market",
-    "household groceries supply"
+  "Health": [
+    "medicine pharmacy chemist",
+    "doctor appointment consultation",
+    "hospital clinic checkup",
+    "gym fitness membership",
+    "health insurance premium"
+  ],
+  "Education": [
+    "course tuition fees",
+    "books study material",
+    "online class subscription",
+    "college university fees",
+    "exam certification fee"
   ]
 }

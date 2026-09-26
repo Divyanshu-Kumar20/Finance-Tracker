@@ -16,3 +16,5 @@ ai-service/model/*.onnx
 ai-service/model/*.data
 .qai_hub/
 client.ini
+
+ai-service/model/*.dlc
